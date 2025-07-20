@@ -2,7 +2,7 @@
 
 ## About
 
-QFalcond Profile Manager is simple profile manager for falcond, currently it allows easier managment of profiles
+This software makes managment of falcond profiles easier.
 
 ### No AI used to make the software.
 
