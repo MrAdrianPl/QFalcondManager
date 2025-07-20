@@ -12,6 +12,7 @@ script:
   - cp qfmain.py AppDir/usr/src -r
   - cp qfprops.py AppDir/usr/src -r
   - cp qfsetup.py AppDir/usr/src -r
+  - cp handler.sh AppDir/usr/src -r
   - cp QFalcond_Logo.png AppDir/usr/share/icons/hicolor/256x256/apps -r
   - apt-get update && apt-get install -y --no-install-recommends squashfs-tools python3
   

@@ -35,7 +35,7 @@ jobs:
     
     - uses: actions/upload-artifact@v4
       with:
-        name: LIT
+        name: QFalcondManager
         path: './QFalcondManager.AppImage*'
     
     - uses: xresloader/upload-to-github-release@v1
