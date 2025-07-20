@@ -13,10 +13,10 @@ class Schedulers():
     def __init__(self):
         pass
         self.schedulers = ["none", "bpfland", "lavd", "rusty", "flash"]
-        self.scheduler_mode = ["none", "default", "gaming", "power", "latency", "server"]
+        self.scheduler_mode = ["default", "gaming", "power", "latency", "server"]
         self.scheduler_default = "none"
         self.current_scheduler = "none"
-        self.current_scheduler_mode = "none"
+        self.current_scheduler_mode = "default"
         
         
     def set_current_scheduler(self,scheduler):
@@ -29,8 +29,8 @@ class Schedulers():
 class PerformanceMode():
     def __init__(self):
         pass
-        self.enabled = ["yes","no"]
-        self.current_enabled = "yes"
+        self.enabled = ["true","false"]
+        self.current_enabled = "true"
         
 
     def set_peformance_mode(self,mode_enabled):
