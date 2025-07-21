@@ -136,16 +136,28 @@ class ProfileElement(QWidget):
         self.profile_name = profile_name
         self.MainLayout = QVBoxLayout()
         
-        if self.profile_name in GetLocalProfiles(): 
+        if self.profile_name in GetLocalProfiles():
             self.profile_properties:falcond_profile = LoadSpecifiedProfile(self.profile_name)
         else:
             self.profile_properties:falcond_profile = EmptyProfile()
 
+        print(self.profile_name)
+        print(self.profile_properties.executable_name.ExecName)
+        print(self.profile_properties.scheduler.current_scheduler)
+        print(self.profile_properties.scheduler.current_scheduler_mode)
+        print(self.profile_properties.performance_mode.current_enabled)
+        print(self.profile_properties.v3cache.mode)
+        print(self.profile_properties.start_script.script)
+        print(self.profile_properties.end_script.script)
+
+
         self.Label = StandardLableTemplate(self.profile_name,QSize(200,30))
         self.Save = StandardButtonTemplate("Save",QSize(80,30),self.SaveProfile)
         self.Executable = StandardInputTemplate("Executable Name",QSize(300,30),self.profile_properties.executable_name.ExecName)
+        
         self.Scheduler = StandardDropdownTemplate("Scheduler",self.profile_properties.scheduler.schedulers,self.profile_properties.scheduler.current_scheduler)
         self.SchedulerMode = StandardDropdownTemplate("Scheduler Mode",self.profile_properties.scheduler.scheduler_mode,self.profile_properties.scheduler.current_scheduler_mode)
+        
         self.Performance = StandardDropdownTemplate("Performance Mode",self.profile_properties.performance_mode.enabled,self.profile_properties.performance_mode.current_enabled)
         self.V3DCache = StandardDropdownTemplate("V3D Cache",self.profile_properties.v3cache.modes,self.profile_properties.v3cache.mode)
         self.StartScript = StandardInputTemplate("Start Script",QSize(300,30),self.profile_properties.start_script.script)
@@ -222,9 +234,11 @@ class StandardDropdownTemplate(QVBoxLayout):
         self.dropdown = QComboBox()
         self.dropdown.addItems(ValuesList)
     
+        self.dropdown.setCurrentText(DefValue)
         inside = QHBoxLayout()
         inside.addWidget(self.def_lable)
         inside.addWidget(self.dropdown)
+        
     
         self.addLayout(inside)
         self.addWidget(SeparatorVertical())

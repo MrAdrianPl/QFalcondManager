@@ -11,7 +11,6 @@ class falcond_profile():
 
 class Schedulers():
     def __init__(self):
-        pass
         self.schedulers = ["none", "bpfland", "lavd", "rusty", "flash"]
         self.scheduler_mode = ["default", "gaming", "power", "latency", "server"]
         self.scheduler_default = "none"
@@ -28,7 +27,6 @@ class Schedulers():
     
 class PerformanceMode():
     def __init__(self):
-        pass
         self.enabled = ["true","false"]
         self.current_enabled = "true"
         
