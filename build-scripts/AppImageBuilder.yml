@@ -54,6 +54,7 @@ AppDir:
       - libpcre3
 
   runtime:
+    version: "v3.0.0"
     env:
       PATH: '${APPDIR}/usr/bin:${PATH}'
       PYTHONHOME: '${APPDIR}/usr'
@@ -64,3 +65,4 @@ AppImage:
   arch: x86_64
   sign-key: None
   file_name: 'QFalcondManager.AppImage'
+  comp: None
