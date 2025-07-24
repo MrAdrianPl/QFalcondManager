@@ -27,7 +27,7 @@ jobs:
 
 
     - name: Build AppImage
-      uses: git-developer/build-appimage@master
+      uses: MrAdrianPl/build-appimage@main
       env:
         UPDATE_INFO: gh-releases-zsync|cgspeck|brewtarget|latest|*x86_64.AppImage.zsync
       with:
