@@ -54,7 +54,6 @@ AppDir:
       - libpcre3
 
   runtime:
-    version: "continuous"
     env:
       PATH: '${APPDIR}/usr/bin:${PATH}'
       PYTHONHOME: '${APPDIR}/usr'
