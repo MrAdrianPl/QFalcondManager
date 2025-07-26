@@ -64,4 +64,4 @@ AppImage:
   arch: x86_64
   sign-key: None
   file_name: 'QFalcondManager.AppImage'
-  comp: None
+  comp: Gzip
