@@ -1,0 +1,45 @@
+name: Build AppImage
+
+run-name: Building Appimage
+on: [push,workflow_dispatch]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - uses: actions/checkout@v2
+    # - name: Install Qt
+    #   uses: jurplel/install-qt-action@v4
+    #   with:
+    #     version: 6.8.3
+
+    - name: list
+      working-directory: ${{github.workspace}}
+      run : ls
+
+    - name: install python PyQt6
+      working-directory: ${{github.workspace}}
+      run : python3 -m pip install --prefix=/usr --root=AppDir PyQt6
+
+
+    - name: Build AppImage
+      uses: MrAdrianPl/build-appimage@main
+      env:
+        UPDATE_INFO: gh-releases-zsync|cgspeck|brewtarget|latest|*x86_64.AppImage.zsync
+      with:
+        recipe: build-scripts/AppImageBuilder.yml     
+    
+    - uses: actions/upload-artifact@v4
+      with:
+        name: QFalcondManager
+        path: './QFalcondManager.AppImage*'
+    
+    - uses: xresloader/upload-to-github-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
+      with:
+        file: './QFalcondManager.AppImage*'
+        tags: true
+        draft: false        
