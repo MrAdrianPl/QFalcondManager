@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (QApplication
                              ,QVBoxLayout
                              ,QWidget)
 
-from qfgui import app_main_panel
+from qfgui import app_main_panel,not_saved_dialog,profiles_stack
 
 class MainWindow(QMainWindow):
 
@@ -28,9 +28,20 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(w)
 
+    def closeEvent(self, event):
+        if profiles_stack.AnyProfilesNeedsToBeSaved():
+            dlg = not_saved_dialog(event)
+            dlg.exec()
+        else:
+            event.accept()
+                  
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
+    
+
+    
     w = MainWindow()
     w.show()
 

@@ -65,3 +65,6 @@ def LoadSpecifiedProfile(profile_name):
         
 def RemoveProfile(profile_name):       
     os.remove(FALCOND_USER_SETTINGS_PATH / profile_name) 
+
+def ProfileExists(profile_name):
+    return Path(FALCOND_USER_SETTINGS_PATH / profile_name).exists()

@@ -11,9 +11,55 @@ from PyQt6.QtWidgets import (QPushButton
                              ,QStackedWidget
                              ,QWidget
                              ,QRadioButton
-                             ,QListWidget)
-from qffunctions import GetLocalProfiles,LoadSpecifiedProfile,EmptyProfile,RemoveProfile,FALCOND_USER_SETTINGS_PATH
+                             ,QListWidget
+                             ,QDialog
+                             )
+from PyQt6.QtGui import QColor
+from qffunctions import GetLocalProfiles,LoadSpecifiedProfile,EmptyProfile,RemoveProfile,FALCOND_USER_SETTINGS_PATH,ProfileExists
 from qfprops import falcond_profile
+
+
+
+class not_saved_dialog(QDialog):
+    def __init__(self,event):
+        super().__init__()
+
+        message = QLabel("You have unsaved changes, close the app anyways?")
+        
+
+        self.standard_ok_button = QPushButton('Save and Quit')
+        self.standard_quit_button = QPushButton('Quit Without Saving')
+        self.standard_cancel_button = QPushButton('Cancel')
+
+        self.standard_ok_button.clicked.connect(lambda: SaveAndQuit(self,event))
+        self.standard_quit_button.clicked.connect(lambda: QuitWithoutSaving(self,event))
+        self.standard_cancel_button.clicked.connect(lambda: CancelClosing(self,event))
+
+        self.setWindowTitle("Exit Warning")
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(message,alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        self.layout.addWidget(self.standard_ok_button)
+        self.layout.addWidget(self.standard_quit_button)
+        self.layout.addWidget(self.standard_cancel_button)
+        
+        
+        self.setLayout(self.layout)
+
+def QuitWithoutSaving(dialog,event):
+    dialog.close()
+    event.accept()
+
+def SaveAndQuit(dialog,event):
+    dialog.close()
+    event.accept()
+    profiles_stack.SaveAllProfiles()
+
+def CancelClosing(dialog,event):
+    dialog.close()
+    event.ignore()
+
+
 def app_main_panel():
     MainWidget = QWidget()
     MainLayout = QVBoxLayout()
@@ -33,11 +79,14 @@ def app_main_panel():
     TopLayout.addLayout(input_new_profile_name)
     TopLayout.addWidget(remove_selected_profile_button,alignment=Qt.AlignmentFlag.AlignLeft)
 
+    plist.itemSelectionChanged.connect(lambda: plist.OnProfileChange(pstack) )
+
     MidLayout.addWidget(plist,alignment=Qt.AlignmentFlag.AlignTop)
     MidLayout.addWidget(pstack,alignment=Qt.AlignmentFlag.AlignTop)
     MainLayout.addLayout(TopLayout)
     MainLayout.addLayout(MidLayout)
     MainWidget.setLayout(MainLayout)
+    
     return MainWidget 
 
 class profile_list(QListWidget):
@@ -49,6 +98,7 @@ class profile_list(QListWidget):
         self.addItems(self.profiles_list)
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.MinimumExpanding)
         self.setMinimumSize(300,300)
+        
         
     def add_new_profile_to_list(self,profile):
         self.addItem(profile)
@@ -62,6 +112,9 @@ class profile_list(QListWidget):
         for widget in self.iterAllItems():
             if widget.text() == name:
                 return widget
+    
+    def set_current_profile_by_name(self,name):
+        self.setCurrentItem(self.get_widget_by_profile_name(name))
 
     def remove_profile_from_list(self,profile):
         
@@ -69,14 +122,37 @@ class profile_list(QListWidget):
         widget_to_remove = self.get_widget_by_profile_name(profile)
         self.takeItem(self.row(widget_to_remove))
         RemoveProfile(profile)
+
+    
+    def OnProfileChange(self,pstack):
+        accent_background_color = pstack.palette().base().color().rgb()
         
+        
+        nprofile:ProfileElement
+        for nprofile in pstack:
+            profile_to_be_highlighted = self.get_widget_by_profile_name(nprofile.profile_name)
+            if nprofile.ProfileHasBeenChanged():
+                profile_to_be_highlighted.setBackground(QColor("#EE8E34"))
+            elif nprofile.ProfileDidNotExists():
+                profile_to_be_highlighted.setBackground(QColor("#23B816"))
+            else:
+                profile_to_be_highlighted.setBackground(accent_background_color)
+
 class profiles_stack(QStackedWidget):
+    stacks_instances = []
+
     def __init__(self,profiles_list:list):
         super().__init__()
+        profiles_stack.stacks_instances.append(self)
         self.DisplayedProfiles = []
         self.ProfilesList = []
         self.load_all_profiles(profiles_list)
         
+    def __iter__(self):
+        element:ProfileElement
+        for element in self.DisplayedProfiles:
+            yield element
+
     def add_profile(self,profile_name):
         if profile_name not in self.ProfilesList:
             new_profile = ProfileElement(profile_name)
@@ -103,6 +179,25 @@ class profiles_stack(QStackedWidget):
             if profile.profile_from_name(profile_name):
                 self.setCurrentWidget(profile)
     
+    @classmethod
+    def AnyProfilesNeedsToBeSaved(cls) -> bool:
+
+        profile_from_list:ProfileElement
+        for stack in cls.stacks_instances:
+            for profile_from_list in stack:
+                if profile_from_list.profile_needs_to_be_saved:
+                    return True
+            return False    
+    
+    @classmethod
+    def SaveAllProfiles(cls):
+        profile_from_list:ProfileElement
+        for stack in cls.stacks_instances:
+           for profile_from_list in stack:
+               if profile_from_list.profile_needs_to_be_saved:
+                   profile_from_list.SaveProfile()
+              
+
 
 def RemoveFromAllLists(plist:profile_list,pstack:profiles_stack):
     try:
@@ -128,28 +223,22 @@ def AddNewProfile(plist:profile_list,pstack:profiles_stack,new_profile_name:str)
         plist.add_new_profile_to_list(new_profile_name)
         pstack.add_profile(new_profile_name)
         pstack.change_to_profile_of_name(new_profile_name)
+        plist.set_current_profile_by_name(new_profile_name)
 
 
 class ProfileElement(QWidget):
+
     def __init__(self,profile_name:str):
         super().__init__()
         self.profile_name = profile_name
         self.MainLayout = QVBoxLayout()
         
+        self.profile_needs_to_be_saved = False
+
         if self.profile_name in GetLocalProfiles():
             self.profile_properties:falcond_profile = LoadSpecifiedProfile(self.profile_name)
         else:
             self.profile_properties:falcond_profile = EmptyProfile()
-
-        print(self.profile_name)
-        print(self.profile_properties.executable_name.ExecName)
-        print(self.profile_properties.scheduler.current_scheduler)
-        print(self.profile_properties.scheduler.current_scheduler_mode)
-        print(self.profile_properties.performance_mode.current_enabled)
-        print(self.profile_properties.v3cache.mode)
-        print(self.profile_properties.start_script.script)
-        print(self.profile_properties.end_script.script)
-
 
         self.Label = StandardLableTemplate(self.profile_name,QSize(200,30))
         self.Save = StandardButtonTemplate("Save",QSize(80,30),self.SaveProfile)
@@ -173,6 +262,25 @@ class ProfileElement(QWidget):
         self.MainLayout.addLayout(self.StartScript)
         self.MainLayout.addLayout(self.EndScript)
         
+        self.Executable.DisplayInfoIcon('Provide process binary name here, e.g. Cyberpunk2077.exe or cs2\nthis is used to detect if game is running')
+        self.Scheduler.DisplayInfoIcon('Chose scheduler, scheduler will change cpu behaviour.\nEach scheduler might work bit different with different hardware setups\nNote that on PikaOS and CachyOS "none" is aniancy')
+        self.SchedulerMode.DisplayInfoIcon('Chose preffered scheduler behaviour')
+        self.Performance.DisplayInfoIcon('This will enable performance mode for cpu if it is possible')
+        self.V3DCache.DisplayInfoIcon('Diffrent modes of AMD V3D Cache managment')
+
+        self.StartScript.DisplayInfoIcon('A script that will be run before game start, its not working like steam command just as simple script')
+        self.EndScript.DisplayInfoIcon('A script that will be run after game will finish')
+
+
+
+        self.Executable.Input_Field.editingFinished.connect(self.SetProfileUnsaved)
+        self.Scheduler.dropdown.currentIndexChanged.connect(self.SetProfileUnsaved)
+        self.SchedulerMode.dropdown.currentIndexChanged.connect(self.SetProfileUnsaved)
+        self.Performance.dropdown.currentIndexChanged.connect(self.SetProfileUnsaved)
+        self.V3DCache.dropdown.currentIndexChanged.connect(self.SetProfileUnsaved)
+        self.StartScript.Input_Field.editingFinished.connect(self.SetProfileUnsaved)
+        self.EndScript.Input_Field.editingFinished.connect(self.SetProfileUnsaved)
+
         self.setLayout(self.MainLayout)
 
     def SaveProfile(self):
@@ -186,10 +294,51 @@ stop_script = \"{self.EndScript.Input_Field.text()}\"
 """
 
         with open( FALCOND_USER_SETTINGS_PATH / self.profile_name, "w") as file:
-            file.write(to_be_saved_as_profile)        
+            file.write(to_be_saved_as_profile)
+        
+        self.profile_needs_to_be_saved = False        
 
-    def ReloadProfile(self):
-        pass
+    def ProfileHasBeenChanged(self):
+        loaded_profile_properties = [
+             self.profile_properties.executable_name.ExecName
+            ,('none' if self.profile_properties.scheduler.current_scheduler == '' else self.profile_properties.scheduler.current_scheduler )
+            ,('default' if self.profile_properties.scheduler.current_scheduler_mode == '' else self.profile_properties.scheduler.current_scheduler_mode)
+            ,('true' if self.profile_properties.performance_mode.current_enabled == '' else self.profile_properties.performance_mode.current_enabled )
+            ,('none' if self.profile_properties.v3cache.mode == '' else self.profile_properties.v3cache.mode )
+            ,self.profile_properties.start_script.script
+            ,self.profile_properties.end_script.script        
+        ]
+        current_profile_properties = [
+            self.Executable.Input_Field.text()
+            ,self.Scheduler.dropdown.currentText()
+            ,self.SchedulerMode.dropdown.currentText()
+            ,self.Performance.dropdown.currentText()
+            ,self.V3DCache.dropdown.currentText()
+            ,self.StartScript.Input_Field.text()
+            ,self.EndScript.Input_Field.text()
+        ] 
+        if loaded_profile_properties == current_profile_properties:
+            return False
+        else: 
+            return True
+    def ProfileDidNotExists(self):
+        if ProfileExists(self.profile_name):
+            return False
+        else:
+            return True
+
+    def ReloadProfileBack(self):
+
+        self.Executable.Input_Field.setText(self.profile_properties.executable_name.ExecName)
+        self.Scheduler.dropdown.setCurrentText(self.profile_properties.scheduler.current_scheduler)
+        self.SchedulerMode.dropdown.setCurrentText(self.profile_properties.scheduler.current_scheduler_mode)
+        self.Performance.dropdown.setCurrentText(self.profile_properties.performance_mode.current_enabled)
+        self.V3DCache.dropdown.setCurrentText(self.profile_properties.v3cache.mode)
+        self.StartScript.Input_Field.setText(self.profile_properties.start_script.script)
+        self.EndScript.Input_Field.setText(self.profile_properties.end_script.script)
+
+    def SetProfileUnsaved(self):
+        self.profile_needs_to_be_saved = True
 
     def profile_from_name(self,name):
         if self.profile_name == name:
@@ -235,13 +384,16 @@ class StandardDropdownTemplate(QVBoxLayout):
         self.dropdown.addItems(ValuesList)
     
         self.dropdown.setCurrentText(DefValue)
-        inside = QHBoxLayout()
-        inside.addWidget(self.def_lable)
-        inside.addWidget(self.dropdown)
+        self.inside = QHBoxLayout()
+        self.inside.addWidget(self.def_lable)
+        self.inside.addWidget(self.dropdown)
         
     
-        self.addLayout(inside)
+        self.addLayout(self.inside)
         self.addWidget(SeparatorVertical())
+
+    def DisplayInfoIcon(self,tooltipstr):
+        self.inside.addWidget(StandardIcon(20,20,tooltipstr))        
 
 def StandardButtonTemplate(ButtonText:str,ButtonSize:QSize,ButtonFucntion,Tooltipstr=None) -> QPushButton:
     standard_button = QPushButton(ButtonText)
@@ -288,16 +440,28 @@ def StandardRadioButtonTemplate(Lable: str) -> QRadioButton:
 
     return button
 
-# def StandardIcon(icon_h: int ,icon_w: int,tooltip_text:str):
-#     button = QPushButton()
-#     button.setFixedSize(QSize(icon_h, icon_w))
-#     button.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed))
-#     button.setMask(rhombus_mask(icon_h,icon_w))
-#     button.setText('!')
-#     button.setToolTip(tooltip_text)
-#     button.setProperty("class","Warning_Icon")
+def StandardIcon(icon_h: int ,icon_w: int,tooltip_text:str):
+    button_style = """
+    QPushButton {
+        background-color: Azure;
+        color: black;
+        font-size: 12px;
+        border-radius: 10px;
+    }
+    QPushButton:hover {
+        background-color: Azure;
+    }
+    """
 
-#     return button   
+    button = QPushButton()
+    button.setFixedSize(QSize(icon_h, icon_w))
+    button.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed))
+    button.setStyleSheet(button_style)
+    button.setText('i')
+    button.setToolTip(tooltip_text)
+    button.setProperty("class","Warning_Icon")
+    
+    return button   
 
 class StandardInputTemplate(QVBoxLayout):
     def __init__(self,LableName: str,size:QSize,DefaultValues,Tooltipstr=None):
@@ -312,8 +476,11 @@ class StandardInputTemplate(QVBoxLayout):
         self.Input_Field.setText(DefaultValues)
         self.Input_Field.setMaximumHeight(60)
         
-        inside = QHBoxLayout()
-        inside.addWidget(self.def_lable)
-        inside.addWidget(self.Input_Field)
-        self.addLayout(inside)
+        self.inside = QHBoxLayout()
+        self.inside.addWidget(self.def_lable)
+        self.inside.addWidget(self.Input_Field)
+        self.addLayout(self.inside)
         self.addWidget(SeparatorVertical())
+
+    def DisplayInfoIcon(self,tooltipstr):
+        self.inside.addWidget(StandardIcon(20,20,tooltipstr))
