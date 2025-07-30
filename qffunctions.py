@@ -68,3 +68,9 @@ def RemoveProfile(profile_name):
 
 def ProfileExists(profile_name):
     return Path(FALCOND_USER_SETTINGS_PATH / profile_name).exists()
+
+def LoadFalcondHistory():
+    return os.popen('journalctl -u falcond -b | cut -d\' \' -f -3,7-','r').read()
+
+def LoadFalcondStatus():
+    return os.popen('systemctl status falcond.service | head -n 2').read()

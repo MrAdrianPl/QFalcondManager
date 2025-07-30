@@ -12,6 +12,7 @@ script:
   - cp qfmain.py AppDir/usr/src -r
   - cp qfprops.py AppDir/usr/src -r
   - cp qfsetup.py AppDir/usr/src -r
+  - cp qfalcondstate.py AppDir/usr/src -r
   - cp handler.sh AppDir/usr/src -r
   - cp QFalcond_Logo.png AppDir/usr/share/icons/hicolor/256x256/apps -r
   - apt-get update && apt-get install -y --no-install-recommends squashfs-tools python3
@@ -23,7 +24,7 @@ AppDir:
     id: QFalcondManager
     name: QFalcondManager
     icon: QFalcond_Logo
-    version: "0.1"
+    version: "0.5"
     # Set the python executable as entry point
     exec: bin/bash
     exec_args: "$APPDIR/usr/src/handler.sh $@"
@@ -58,7 +59,7 @@ AppDir:
       PATH: '${APPDIR}/usr/bin:${PATH}'
       PYTHONHOME: '${APPDIR}/usr'
       PYTHONPATH: '${APPDIR}/usr/lib/python3.10/site-packages'
-      CAPPVERSION: "0.1"
+      CAPPVERSION: "0.5"
 
 AppImage:
   arch: x86_64

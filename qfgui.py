@@ -185,9 +185,9 @@ class profiles_stack(QStackedWidget):
         profile_from_list:ProfileElement
         for stack in cls.stacks_instances:
             for profile_from_list in stack:
-                if profile_from_list.profile_needs_to_be_saved:
+                if profile_from_list.profile_needs_to_be_saved or profile_from_list.ProfileDidNotExists():
                     return True
-            return False    
+            return False
     
     @classmethod
     def SaveAllProfiles(cls):
@@ -443,7 +443,7 @@ def StandardRadioButtonTemplate(Lable: str) -> QRadioButton:
 def StandardIcon(icon_h: int ,icon_w: int,tooltip_text:str):
     button_style = """
     QPushButton {
-        background-color: Azure;
+        background-color: "#2CB0E4";
         color: black;
         font-size: 12px;
         border-radius: 10px;
@@ -452,7 +452,7 @@ def StandardIcon(icon_h: int ,icon_w: int,tooltip_text:str):
         background-color: Azure;
     }
     """
-
+    
     button = QPushButton()
     button.setFixedSize(QSize(icon_h, icon_w))
     button.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed))

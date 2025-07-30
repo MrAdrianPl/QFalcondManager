@@ -2,9 +2,11 @@ import sys
 from PyQt6.QtWidgets import (QApplication
                              ,QMainWindow
                              ,QVBoxLayout
-                             ,QWidget)
+                             ,QWidget
+                             ,QTabWidget)
 
 from qfgui import app_main_panel,not_saved_dialog,profiles_stack
+from qfalcondstate import FalcondInfoWidget
 
 class MainWindow(QMainWindow):
 
@@ -17,12 +19,21 @@ class MainWindow(QMainWindow):
         self.resize(800, 1000)
 
         #tabs = self.Tab_Headers()
+        tab_bar = QTabWidget()
         main_panel = app_main_panel()
+        info_panel = FalcondInfoWidget()
 
         mainl = QVBoxLayout()
         w = QWidget()
         
-        mainl.addWidget(main_panel)
+        tab_bar.addTab(main_panel,"Profile Managment")
+        tab_bar.addTab(info_panel,"Falcond Info")
+
+        tab_bar.currentChanged.connect( lambda index: info_panel.StopRunning() if index == 0 else print('') )
+        tab_bar.currentChanged.connect( lambda index: info_panel.StartRunning() if index == 1 else print('') )
+
+        mainl.addWidget(tab_bar)
+
         
         w.setLayout(mainl)
 
