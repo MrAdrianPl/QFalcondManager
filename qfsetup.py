@@ -3,11 +3,11 @@ from qffunctions import GetGlobalProfiles,GetLocalProfiles,FALCOND_SETTINGS_PATH
 
 
 def ReturnMe():
-    return os.popen('logname').read().strip()
+    return os.popen("/bin/bash -c 'logname'").read().strip()
 
 def CreateUserFolder():
     if not FALCOND_USER_SETTINGS_PATH.exists():
-        os.system(f'mkdir {FALCOND_USER_SETTINGS_PATH}')
+        os.system(f"/bin/bash -c 'mkdir {FALCOND_USER_SETTINGS_PATH}'")
 
 def CopyGlobalProfiles():
     global_profiles_list = GetGlobalProfiles()
