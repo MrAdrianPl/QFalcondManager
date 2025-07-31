@@ -1,0 +1,72 @@
+version: 1
+
+
+script:
+  # Remove any previous build
+  # Make usr and icons dirs
+  - mkdir -p AppDir/usr/src
+  - mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+  # Copy the python application code into the AppDir
+  - cp qffunctions.py AppDir/usr/src -r
+  - cp qfgui.py AppDir/usr/src -r
+  - cp qfmain.py AppDir/usr/src -r
+  - cp qfprops.py AppDir/usr/src -r
+  - cp qfsetup.py AppDir/usr/src -r
+  - cp qfalcondstate.py AppDir/usr/src -r
+  - cp handler.sh AppDir/usr/src -r
+  - cp QFalcond_Logo.png AppDir/usr/share/icons/hicolor/256x256/apps -r
+  - apt-get update && apt-get install -y --no-install-recommends squashfs-tools python3 wget
+  
+  
+AppDir:
+  path: ./AppDir
+  app_info:
+    id: QFalcondManager
+    name: QFalcondManager
+    icon: QFalcond_Logo
+    version: "0.5"
+    # Set the python executable as entry point
+    exec: bin/bash
+    exec_args: "$APPDIR/usr/src/handler.sh $@"
+
+  apt:
+    arch: amd64
+    sources:
+    allow_unauthenticated: true
+    sources:
+      - sourceline: deb http://mx.archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse
+      - sourceline: deb http://mx.archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse
+      - sourceline: deb http://mx.archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse
+      - sourceline: deb http://security.ubuntu.com/ubuntu jammy-security main restricted universe multiverse
+
+    include:
+      - python3
+      - python3-pkg-resources
+      - libfreetype6
+      - libfontconfig1
+      - bash
+      - coreutils      
+    exclude:
+      - usr/share/man
+      - usr/share/doc/*/README.*
+      - usr/share/doc/*/changelog.*
+      - usr/share/doc/*/NEWS.*
+      - usr/share/doc/*/TODO.*
+      - libpcre3
+    
+    after_bundle: |
+      wget http://ftp.de.debian.org/debian/pool/main/r/readline/libreadline8_8.2-1.3_amd64.deb && sudo dpkg -i ./libreadline8_8.2-1.3_amd64.deb
+    
+
+  runtime:
+    env:
+      PATH: '${APPDIR}/usr/bin:${PATH}'
+      PYTHONHOME: '${APPDIR}/usr'
+      PYTHONPATH: '${APPDIR}/usr/lib/python3.10/site-packages'
+      CAPPVERSION: "0.5"
+
+AppImage:
+  arch: x86_64
+  sign-key: None
+  file_name: 'QFalcondManager.AppImage'
+  comp: gzip

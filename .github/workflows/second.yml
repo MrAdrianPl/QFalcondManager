@@ -29,7 +29,7 @@ jobs:
       env:
         UPDATE_INFO: gh-releases-zsync|cgspeck|brewtarget|latest|*x86_64.AppImage.zsync
       with:
-        recipe: build-scripts/AppImageBuilder.yml     
+        recipe: build-scripts/AppImageBuilder-test.yml     
     
     - uses: actions/upload-artifact@v4
       with:
