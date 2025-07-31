@@ -46,6 +46,8 @@ AppDir:
       - libfontconfig1
       - bash
       - coreutils      
+      - libreadline8
+      - libreadline-dev
     exclude:
       - usr/share/man
       - usr/share/doc/*/README.*
