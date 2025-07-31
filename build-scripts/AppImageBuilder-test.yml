@@ -19,6 +19,9 @@ script:
   
   
 AppDir:
+  after_bundle: |
+      wget http://ftp.de.debian.org/debian/pool/main/r/readline/libreadline8_8.2-1.3_amd64.deb && sudo dpkg -i ./libreadline8_8.2-1.3_amd64.deb
+      
   path: ./AppDir
   app_info:
     id: QFalcondManager
@@ -54,8 +57,6 @@ AppDir:
       - usr/share/doc/*/TODO.*
       - libpcre3
     
-    after_bundle: |
-      wget http://ftp.de.debian.org/debian/pool/main/r/readline/libreadline8_8.2-1.3_amd64.deb && sudo dpkg -i ./libreadline8_8.2-1.3_amd64.deb
     
 
   runtime:
