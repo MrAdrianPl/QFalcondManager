@@ -12,10 +12,8 @@ def CopyGlobalProfiles():
     local_profiles_list = GetLocalProfiles()
 
     profiles_to_copy = [ item for item in global_profiles_list if item not in local_profiles_list ]
-
-    profile_names = ','.join(str(profile_name) for profile_name in profiles_to_copy)
     
-    for profile in profile_names:
+    for profile in profiles_to_copy:
         copyfile(FALCOND_SETTINGS_PATH / profile, FALCOND_USER_SETTINGS_PATH)
 
 def TakeOwnershipOfFolderAndFiles():
