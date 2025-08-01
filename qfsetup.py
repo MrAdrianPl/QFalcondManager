@@ -1,13 +1,11 @@
 import os
 from qffunctions import GetGlobalProfiles,GetLocalProfiles,FALCOND_SETTINGS_PATH,FALCOND_USER_SETTINGS_PATH
-
-
-def ReturnMe():
-    return os.popen("/bin/bash -c 'logname'").read().strip()
+from pwd import getpwnam
+from shutil import copyfile
 
 def CreateUserFolder():
     if not FALCOND_USER_SETTINGS_PATH.exists():
-        os.system(f"/bin/bash -c 'mkdir {FALCOND_USER_SETTINGS_PATH}'")
+        os.mkdir(FALCOND_USER_SETTINGS_PATH)
 
 def CopyGlobalProfiles():
     global_profiles_list = GetGlobalProfiles()
@@ -17,14 +15,14 @@ def CopyGlobalProfiles():
 
     profile_names = ','.join(str(profile_name) for profile_name in profiles_to_copy)
     
-    os.system(f"/bin/bash -c 'cp {FALCOND_SETTINGS_PATH}/{{{profile_names}}} {FALCOND_USER_SETTINGS_PATH}'")
+    for profile in profile_names:
+        copyfile(FALCOND_SETTINGS_PATH / profile, FALCOND_USER_SETTINGS_PATH)
 
 def TakeOwnershipOfFolderAndFiles():
-    userprofilesowner:str = os.popen(f"ls -ld {FALCOND_USER_SETTINGS_PATH} | awk '{{print $3}}'").read()     
-    setup_user = ReturnMe()
-
-    if userprofilesowner != setup_user:
-        os.system(f'chown -R {setup_user} {FALCOND_USER_SETTINGS_PATH}')
+    setup_user = os.getlogin()
+    uid = getpwnam(setup_user).pw_uid
+    gid = getpwnam(setup_user).pw_gid    
+    os.chown(FALCOND_USER_SETTINGS_PATH,uid,gid)
 
 def RunSetup():
     CreateUserFolder()
