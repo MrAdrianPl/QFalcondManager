@@ -19,9 +19,6 @@ script:
   
   
 AppDir:
-  after_bundle: |
-      wget http://ftp.de.debian.org/debian/pool/main/r/readline/libreadline8_8.2-1.3_amd64.deb && dpkg -i ./libreadline8_8.2-1.3_amd64.deb
-      
   path: ./AppDir
   app_info:
     id: QFalcondManager
