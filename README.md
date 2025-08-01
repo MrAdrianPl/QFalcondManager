@@ -7,8 +7,8 @@ This software makes managment of falcond profiles easier.
 ### No AI used to make the software.
 
 ## Instalation
-Download Appimage and run
-```sudo QFalcondManager.AppImage --setup```
+Download Appimage open directory in your terminal and run
+```sudo ./QFalcondManager.AppImage --setup```
 
 this step should not be done if it was ever done before or there was a hand made setup of user profiles directory
 
