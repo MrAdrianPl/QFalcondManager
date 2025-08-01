@@ -1,7 +1,7 @@
 import os
 from qffunctions import GetGlobalProfiles,GetLocalProfiles,FALCOND_SETTINGS_PATH,FALCOND_USER_SETTINGS_PATH
 from pwd import getpwnam
-from shutil import copyfile
+from shutil import copy
 
 def CreateUserFolder():
     if not FALCOND_USER_SETTINGS_PATH.exists():
@@ -14,7 +14,7 @@ def CopyGlobalProfiles():
     profiles_to_copy = [ item for item in global_profiles_list if item not in local_profiles_list ]
     
     for profile in profiles_to_copy:
-        copyfile(FALCOND_SETTINGS_PATH / profile, FALCOND_USER_SETTINGS_PATH)
+        copy(FALCOND_SETTINGS_PATH / profile, FALCOND_USER_SETTINGS_PATH)
 
 def TakeOwnershipOfFolderAndFiles():
     setup_user = os.getlogin()
