@@ -21,6 +21,8 @@ def TakeOwnershipOfFolderAndFiles():
     uid = getpwnam(setup_user).pw_uid
     gid = getpwnam(setup_user).pw_gid    
     os.chown(FALCOND_USER_SETTINGS_PATH,uid,gid)
+    for file in FALCOND_USER_SETTINGS_PATH.iterdir():
+        os.chown(FALCOND_USER_SETTINGS_PATH / file,uid,gid)
 
 def RunSetup():
     CreateUserFolder()
