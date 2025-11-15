@@ -11,7 +11,7 @@ class falcond_profile():
 
 class Schedulers():
     def __init__(self):
-        self.schedulers = ["none", "bpfland", "lavd", "rusty", "flash"]
+        self.schedulers = ["none", "bpfland", "lavd", "rusty", "flash","central","cosmos","layered","nest","qmap","rlfifo","rustland","userland","p2dq","tickless"]
         self.scheduler_mode = ["default", "gaming", "power", "latency", "server"]
         self.scheduler_default = "none"
         self.current_scheduler = "none"
